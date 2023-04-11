@@ -45,12 +45,14 @@ public class Butler {
 
         // Receive system events
         EventBus.subscribe(ChatMessageEvent.class, evt -> {
-            boolean debug = ButlerConfig.getInstance().whisperFormatDebug;
-            String message = evt.messageContent();
-            if (debug) {
-                Debug.logMessage("RECEIVED WHISPER: \"" + message + "\".");
+            if (!evt.message.startsWith("§2§l§o"+_mod.getModSettings().getChatLogPrefix())) {
+                boolean debug = ButlerConfig.getInstance().whisperFormatDebug;
+                String message = evt.message;
+                if (debug) {
+                    Debug.logMessage("RECEIVED WHISPER: \"" + message + "\".");
+                }
+                _mod.getButler().receiveMessage(message);
             }
-            _mod.getButler().receiveMessage(message);
         });
     }
 
@@ -124,8 +126,7 @@ public class Butler {
         _commandFinished = false;
         _currentUser = username;
         sendWhisper("Command Executing: " + message, MessagePriority.TIMELY);
-        String prefix = ButlerConfig.getInstance().requirePrefixMsg ? _mod.getModSettings().getCommandPrefix() : "";
-        AltoClef.getCommandExecutor().execute(prefix + message, () -> {
+        AltoClef.getCommandExecutor().execute(_mod.getModSettings().getCommandPrefix() + message, () -> {
             // On finish
             sendWhisper("Command Finished: " + message, MessagePriority.TIMELY);
             if (!_commandInstantRan) {
